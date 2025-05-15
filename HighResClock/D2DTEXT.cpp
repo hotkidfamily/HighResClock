@@ -109,7 +109,7 @@ bool d2dtext::_run()
                                               DWRITE_FONT_WEIGHT_REGULAR, // Weight
                                               DWRITE_FONT_STYLE_NORMAL,   // Style
                                               DWRITE_FONT_STRETCH_NORMAL, // Stretch
-                                              50.0f * scale,              // Size
+                                              72 * scale,              // Size
                                               L"en-us",                   // Local
                                               &_clockFormat               // Pointer to recieve the created object
         );
@@ -150,7 +150,7 @@ bool d2dtext::_run()
         }
         {
             Microsoft::WRL::ComPtr<IDWriteTextLayout> pTextLayout = nullptr;
-            std::wstring msg = L"1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            std::wstring msg = L"1234567890:";
             hr = _writerFactory->CreateTextLayout(msg.c_str(), msg.size(), _clockFormat.Get(), 1000.0f, 1000.0f,
                                                   &pTextLayout);
 
