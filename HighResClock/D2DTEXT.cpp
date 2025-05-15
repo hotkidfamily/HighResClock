@@ -178,7 +178,7 @@ bool d2dtext::_run()
 
             _target->BeginDraw();
             _target->SetTransform(D2D1::Matrix3x2F::Identity());
-            _target->Clear(D2D1::ColorF(D2D1::ColorF(0.6f, 0.6f, 0.6f)));
+            _target->Clear(D2D1::ColorF(D2D1::ColorF(0.4f, 0.4f, 0.4f)));
 
             count++;
 
