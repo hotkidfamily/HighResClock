@@ -65,7 +65,9 @@ BEGIN_MESSAGE_MAP(CHighResClockDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-END_MESSAGE_MAP()
+	ON_WM_CLOSE()
+    ON_WM_LBUTTONDBLCLK()
+    END_MESSAGE_MAP()
 
 
 // CHighResClockDlg 消息处理程序
@@ -99,10 +101,17 @@ BOOL CHighResClockDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	ShowWindow(SW_MAXIMIZE);
+	ShowWindow(SW_NORMAL);
 
-	ShowWindow(SW_MINIMIZE);
+	CenterWindow();
 
+	SetWindowText(_T("HighResClock"));
+
+	//ShowWindow(SW_MINIMIZE);
+	_render = std::make_unique<d2dtext>();
+	_render->Init(this->m_hWnd);
+
+	_render->Start();
 	// TODO: 在此添加额外的初始化代码
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -150,6 +159,13 @@ void CHighResClockDlg::OnPaint()
 	}
 }
 
+void CHighResClockDlg::OnClose()
+{
+    _render.reset();
+
+    CDialog::OnClose();
+}
+
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
 HCURSOR CHighResClockDlg::OnQueryDragIcon()
@@ -157,3 +173,21 @@ HCURSOR CHighResClockDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+BOOL CHighResClockDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+	{
+		return TRUE; // 屏蔽ESC键
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
+void CHighResClockDlg::OnLButtonDblClk(UINT, CPoint)
+{
+    if (_render)
+    {
+        _showMsg = !_showMsg;
+        _render->Config(_showMsg);
+	}
+}

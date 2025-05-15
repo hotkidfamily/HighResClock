@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <memory>
+#include "d2dtext.h"
 
 // CHighResClockDlg 对话框
 class CHighResClockDlg : public CDialogEx
@@ -29,6 +31,15 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
+    afx_msg void OnClose();
 	afx_msg HCURSOR OnQueryDragIcon();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	DECLARE_MESSAGE_MAP()
+
+
+	std::unique_ptr<d2dtext> _render;
+    bool _showMsg = false;
+
+  public:
+    afx_msg void OnLButtonDblClk(UINT, CPoint);
 };
