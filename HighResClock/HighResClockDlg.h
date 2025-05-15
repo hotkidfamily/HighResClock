@@ -42,4 +42,5 @@ protected:
 
   public:
     afx_msg void OnLButtonDblClk(UINT, CPoint);
+    afx_msg void OnSize(UINT, int, int);
 };

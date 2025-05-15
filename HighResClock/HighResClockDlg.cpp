@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CHighResClockDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_CLOSE()
     ON_WM_LBUTTONDBLCLK()
+    ON_WM_SIZE()
     END_MESSAGE_MAP()
 
 
@@ -112,7 +113,6 @@ BOOL CHighResClockDlg::OnInitDialog()
 	_render->Init(this->m_hWnd);
 
 	_render->Start();
-	// TODO: 在此添加额外的初始化代码
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -190,4 +190,13 @@ void CHighResClockDlg::OnLButtonDblClk(UINT, CPoint)
         _showMsg = !_showMsg;
         _render->Config(_showMsg);
 	}
+}
+
+void CHighResClockDlg::OnSize(UINT, int, int)
+{
+    if (_render)
+    {
+        _render->End();
+        _render->Start();
+    }
 }

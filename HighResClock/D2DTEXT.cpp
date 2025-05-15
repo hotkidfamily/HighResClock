@@ -15,6 +15,8 @@
 bool d2dtext::Init(HWND hwnd)
 {
     _hwnd = hwnd;
+    GetClientRect(_hwnd, &_initRc);
+
     return true;
 }
 
@@ -74,13 +76,40 @@ bool d2dtext::_run()
         {
             break;
         }
+        
+        CRect rc;
+        GetClientRect(_hwnd, &rc);
+        D2D1_SIZE_U size = D2D1::SizeU(rc.Width(), rc.Height());
+
+        hr = _factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(),
+                                              D2D1::HwndRenderTargetProperties(_hwnd, size), &_target);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightCyan), &_clockBrush);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightYellow), &_dbgBrush);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        float scalex = rc.Width() * 1.0f / _initRc.Width();
+        float scaley = rc.Height() * 1.0f / _initRc.Height();
+        float scale = (std::min)(scalex, scaley);
 
         hr = _writerFactory->CreateTextFormat(L"Monaco", // Font family name
                                               NULL,      // Font collection(NULL sets it to the system font collection)
                                               DWRITE_FONT_WEIGHT_REGULAR, // Weight
                                               DWRITE_FONT_STYLE_NORMAL,   // Style
                                               DWRITE_FONT_STRETCH_NORMAL, // Stretch
-                                              50.0f,                      // Size
+                                              50.0f * scale,              // Size
                                               L"en-us",                   // Local
                                               &_clockFormat               // Pointer to recieve the created object
         );
@@ -136,29 +165,6 @@ bool d2dtext::_run()
             }
         }
 
-        // Create text layout rect
-        RECT rc;
-        GetClientRect(_hwnd, &rc);
-        D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
-
-        hr = _factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(),
-                                              D2D1::HwndRenderTargetProperties(_hwnd, size), &_target);
-        if (FAILED(hr))
-        {
-            break;
-        }
-
-        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightCyan), &_clockBrush);
-        if (FAILED(hr))
-        {
-            break;
-        }
-
-        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightYellow), &_dbgBrush);
-        if (FAILED(hr))
-        {
-            break;
-        }
     } while (0);
 
     if (!FAILED(hr))

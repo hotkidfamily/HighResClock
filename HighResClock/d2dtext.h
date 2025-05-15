@@ -34,5 +34,6 @@ private:
     bool _show_render_fps = false;
 
 	HWND _hwnd = nullptr;
+    CRect _initRc{0};
 };
 
