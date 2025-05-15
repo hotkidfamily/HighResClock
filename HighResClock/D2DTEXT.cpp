@@ -148,13 +148,13 @@ bool d2dtext::_run()
             break;
         }
 
-        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Green), &_clockBrush);
+        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightCyan), &_clockBrush);
         if (FAILED(hr))
         {
             break;
         }
 
-        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Yellow), &_dbgBrush);
+        hr = _target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::LightYellow), &_dbgBrush);
         if (FAILED(hr))
         {
             break;
@@ -171,13 +171,14 @@ bool d2dtext::_run()
         std::wstringstream dbgWss;
 
         int count = 0;
+        auto start = std::chrono::high_resolution_clock::now();
         while (!_stop)
         {
             wss.str(L"");
 
             _target->BeginDraw();
             _target->SetTransform(D2D1::Matrix3x2F::Identity());
-            _target->Clear(D2D1::ColorF(D2D1::ColorF::SandyBrown));
+            _target->Clear(D2D1::ColorF(D2D1::ColorF(0.6f, 0.6f, 0.6f)));
 
             count++;
 
@@ -207,14 +208,20 @@ bool d2dtext::_run()
 
             if (_show_render_fps)
             {
-                uint64_t min, max;
-                dbgWss.str(L"");
+                auto end = std::chrono::high_resolution_clock::now();
 
-                _statics->minMax(min, max);
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                if (duration > 1000)
+                {
+                    start = end;
+                    uint64_t min, max;
+                    dbgWss.str(L"");
 
-                dbgWss << std::fixed << std::setprecision(2) << "(fps/min/max):" << _statics->fps() << "/" << min << "/"
-                       << max;
+                    _statics->minMax(min, max);
 
+                    dbgWss << std::fixed << std::setprecision(2) << "f/l/h:" << _statics->fps() << "/" << min << "/"
+                           << max;
+                }
                 auto dbgMsg = dbgWss.str();
                 _target->DrawTextW(dbgMsg.c_str(),   // Text to render
                                    dbgMsg.size(),    // Text length
@@ -229,7 +236,6 @@ bool d2dtext::_run()
             if (hr == D2DERR_RECREATE_TARGET)
             {
                 hr = S_OK;
-                // DiscardDeviceResources();
             }
         }
     }
