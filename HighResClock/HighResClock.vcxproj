@@ -192,6 +192,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SlidingWindow.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2dtext.cpp" />

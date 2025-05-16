@@ -8,6 +8,8 @@
 #include "HighResClockDlg.h"
 #include "afxdialogex.h"
 
+#include <sstream>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -106,7 +108,10 @@ BOOL CHighResClockDlg::OnInitDialog()
 
 	CenterWindow();
 
-	SetWindowText(_T("HighResClock"));
+	std::wstringstream wss;
+    wss << _T("HighResClock") << " /"<< Version << " /" << __DATE__;
+
+	SetWindowText(wss.str().c_str());
 
 	//ShowWindow(SW_MINIMIZE);
 	_render = std::make_unique<d2dtext>();

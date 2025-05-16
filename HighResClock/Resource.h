@@ -2,6 +2,8 @@
 // Microsoft Visual C++ 生成的包含文件。
 // 由 HighResClock.rc 使用
 //
+#include "version.h"
+
 #define IDR_MAINFRAME					128
 #define IDM_ABOUTBOX					0x0010
 #define IDD_ABOUTBOX					100
