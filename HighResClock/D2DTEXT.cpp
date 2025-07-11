@@ -128,7 +128,7 @@ bool d2dtext::_run()
 
                 float scalex = _UpdateSz.cx * 1.0f / _initSz.cx;
                 float scaley = _UpdateSz.cy * 1.0f / _initSz.cy;
-                float scale = (std::min)(scalex, scaley);
+                float scale = (std::max)(scalex, scaley);
 
                 if (scale > abs(scale - 1.0f) > 0.2f)
                 {
