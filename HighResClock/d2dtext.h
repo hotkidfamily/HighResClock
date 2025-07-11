@@ -8,32 +8,38 @@
 
 #include <thread>
 
-class d2dtext
-{
-public:
-    d2dtext() {}
+class d2dtext {
+  public:
+    d2dtext()
+    {
+    }
 
-	~d2dtext()
+    ~d2dtext()
     {
         End();
     }
 
-	bool Init(HWND hwnd);
+    bool Init(HWND v);
     bool Config(bool);
 
-	bool Start();
-	bool End();
+    bool Resize(SIZE);
 
-protected:
-	bool _run();
-	
-private:
+    bool Start();
+    bool End();
 
-	std::thread _thread;
-	bool _stop = true;
+  protected:
+    bool _run();
+    HRESULT _createFont(IDWriteFactory *factory,
+                        Microsoft::WRL::ComPtr<IDWriteTextFormat> &format,
+                        float &fontHeight,
+                        int fontSize);
+
+  private:
+    std::thread _thread;
+    bool _stop = true;
     bool _show_render_fps = false;
 
-	HWND _hwnd = nullptr;
-    CRect _initRc{0};
+    HWND _hwnd;
+    SIZE _initSz{};
+    SIZE _UpdateSz{};
 };
-

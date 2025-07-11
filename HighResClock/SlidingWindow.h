@@ -174,7 +174,7 @@ class DurationSlidingWindow {
         auto &b = _data.front();
         auto &e = _data.back();
         auto d = std::chrono::duration_cast<std::chrono::milliseconds>(e - b).count();
-        v = (_data.size() * 1000.0f) / d;
+        v = ((_data.size() - 1) * 1000.0f) / d;
         return v;
     }
 

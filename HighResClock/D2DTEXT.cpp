@@ -12,10 +12,15 @@
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "Dwrite.lib")
 
+using namespace Microsoft::WRL;
+
 bool d2dtext::Init(HWND hwnd)
 {
     _hwnd = hwnd;
-    GetClientRect(_hwnd, &_initRc);
+    CRect r;
+    GetClientRect(_hwnd, &r);
+    _initSz = { r.Width(), r.Height() };
+    _UpdateSz = _initSz;
 
     return true;
 }
@@ -25,6 +30,12 @@ bool d2dtext::Config(bool invalue)
     _show_render_fps = invalue;
 
     return true;
+}
+
+bool d2dtext::Resize(SIZE v)
+{
+    _UpdateSz = v;
+    return false;
 }
 
 bool d2dtext::Start()
@@ -50,17 +61,16 @@ bool d2dtext::End()
 bool d2dtext::_run()
 {
     HRESULT hr = E_FAIL;
-    Microsoft::WRL::ComPtr<ID2D1Factory> _factory;
-    Microsoft::WRL::ComPtr<IDWriteFactory> _writerFactory;
-    Microsoft::WRL::ComPtr<IDWriteTextFormat> _clockFormat;
-    Microsoft::WRL::ComPtr<IDWriteTextFormat> _dbgFormat;
-    Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> _target;
-    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> _clockBrush;
-    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> _dbgBrush;
+    ComPtr<ID2D1Factory> _factory;
+    ComPtr<IDWriteFactory> _writerFactory;
+    ComPtr<IDWriteTextFormat> _clockFormat;
+    ComPtr<IDWriteTextFormat> _dbgFormat;
+    ComPtr<ID2D1HwndRenderTarget> _target;
+    ComPtr<ID2D1SolidColorBrush> _clockBrush;
+    ComPtr<ID2D1SolidColorBrush> _dbgBrush;
     float dbgFontHeight = NAN;
     float clockFontHeight = NAN;
     std::unique_ptr<utils::DurationSlidingWindow> _statics = std::make_unique<utils::DurationSlidingWindow>(2000);
-
 
     do
     {
@@ -76,11 +86,8 @@ bool d2dtext::_run()
         {
             break;
         }
-        
-        CRect rc;
-        GetClientRect(_hwnd, &rc);
-        D2D1_SIZE_U size = D2D1::SizeU(rc.Width(), rc.Height());
 
+        D2D1_SIZE_U size = D2D1::SizeU(_initSz.cx, _initSz.cy);
         hr = _factory->CreateHwndRenderTarget(D2D1::RenderTargetProperties(),
                                               D2D1::HwndRenderTargetProperties(_hwnd, size), &_target);
         if (FAILED(hr))
@@ -100,79 +107,13 @@ bool d2dtext::_run()
             break;
         }
 
-        float scalex = rc.Width() * 1.0f / _initRc.Width();
-        float scaley = rc.Height() * 1.0f / _initRc.Height();
-        float scale = (std::min)(scalex, scaley);
-
-        hr = _writerFactory->CreateTextFormat(L"Monaco", // Font family name
-                                              NULL,      // Font collection(NULL sets it to the system font collection)
-                                              DWRITE_FONT_WEIGHT_REGULAR, // Weight
-                                              DWRITE_FONT_STYLE_NORMAL,   // Style
-                                              DWRITE_FONT_STRETCH_NORMAL, // Stretch
-                                              72 * scale,              // Size
-                                              L"en-us",                   // Local
-                                              &_clockFormat               // Pointer to recieve the created object
-        );
-        if (FAILED(hr))
-        {
-            break;
-        }
-
-        hr = _writerFactory->CreateTextFormat(L"Monaco", // Font family name
-                                              NULL,      // Font collection(NULL sets it to the system font collection)
-                                              DWRITE_FONT_WEIGHT_REGULAR, // Weight
-                                              DWRITE_FONT_STYLE_ITALIC,   // Style
-                                              DWRITE_FONT_STRETCH_NORMAL, // Stretch
-                                              25.0f,                      // Size
-                                              L"en-us",                   // Local
-                                              &_dbgFormat                 // Pointer to recieve the created object
-        );
-        if (FAILED(hr))
-        {
-            break;
-        }
-
-        {
-            Microsoft::WRL::ComPtr<IDWriteTextLayout> pTextLayout = nullptr;
-            std::wstring msg = L"1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            hr = _writerFactory->CreateTextLayout(msg.c_str(), msg.size(), _dbgFormat.Get(), 1000.0f, 1000.0f,
-                                                  &pTextLayout);
-
-            if (SUCCEEDED(hr))
-            {
-                DWRITE_TEXT_METRICS textMetrics;
-                hr = pTextLayout->GetMetrics(&textMetrics);
-                if (SUCCEEDED(hr))
-                {
-                    dbgFontHeight = textMetrics.height;
-                }
-            }
-        }
-        {
-            Microsoft::WRL::ComPtr<IDWriteTextLayout> pTextLayout = nullptr;
-            std::wstring msg = L"1234567890:";
-            hr = _writerFactory->CreateTextLayout(msg.c_str(), msg.size(), _clockFormat.Get(), 1000.0f, 1000.0f,
-                                                  &pTextLayout);
-
-            if (SUCCEEDED(hr))
-            {
-                DWRITE_TEXT_METRICS textMetrics;
-                hr = pTextLayout->GetMetrics(&textMetrics);
-                if (SUCCEEDED(hr))
-                {
-                    clockFontHeight = textMetrics.height;
-                }
-            }
-        }
+        hr = _createFont(_writerFactory.Get(), _clockFormat, clockFontHeight, 72);
+        hr = _createFont(_writerFactory.Get(), _dbgFormat, dbgFontHeight, 28);
 
     } while (0);
 
     if (!FAILED(hr))
     {
-        D2D1_SIZE_F rtSize = _target->GetSize();
-        auto clockRect = D2D1::RectF(0, (rtSize.height - clockFontHeight)/2, rtSize.width, rtSize.height);
-        auto dbgRect = D2D1::RectF(0, rtSize.height - dbgFontHeight, rtSize.width, rtSize.height);
-
         std::wstringstream wss;
         std::wstringstream dbgWss;
 
@@ -180,6 +121,27 @@ bool d2dtext::_run()
         auto start = std::chrono::high_resolution_clock::now();
         while (!_stop)
         {
+            if (_UpdateSz.cx != 0 && _UpdateSz.cy != 0)
+            {
+                D2D1_SIZE_U rsz = { _UpdateSz.cx, _UpdateSz.cy };
+                _target->Resize(rsz);
+
+                float scalex = _UpdateSz.cx * 1.0f / _initSz.cx;
+                float scaley = _UpdateSz.cy * 1.0f / _initSz.cy;
+                float scale = (std::min)(scalex, scaley);
+
+                if (scale > abs(scale - 1.0f) > 0.2f)
+                {
+                    int fs = 72 * scale;
+                    hr = _createFont(_writerFactory.Get(), _clockFormat, clockFontHeight, fs);
+                }
+
+                _UpdateSz = { 0, 0 };
+            }
+            D2D1_SIZE_F rtSize = _target->GetSize();
+            auto clockRect = D2D1::RectF(0, (rtSize.height - clockFontHeight) / 2, rtSize.width, rtSize.height);
+            auto dbgRect = D2D1::RectF(0, rtSize.height - dbgFontHeight, rtSize.width, rtSize.height);
+
             wss.str(L"");
 
             _target->BeginDraw();
@@ -225,7 +187,7 @@ bool d2dtext::_run()
 
                     _statics->minMax(min, max);
 
-                    dbgWss << std::fixed << std::setprecision(2) << "f/l/h:" << _statics->fps() << "/" << min << "/"
+                    dbgWss << std::fixed << std::setprecision(2) << "f/l/h:" << _statics->fps() << "/" << min << "~"
                            << max;
                 }
                 auto dbgMsg = dbgWss.str();
@@ -247,4 +209,45 @@ bool d2dtext::_run()
     }
 
     return true;
+}
+
+HRESULT d2dtext::_createFont(IDWriteFactory *factory,
+                             ComPtr<IDWriteTextFormat> &format,
+                             float &fontHeight,
+                             int fontSize)
+{
+    HRESULT hr;
+    ComPtr<IDWriteTextFormat> reqFormat;
+    float height = NAN;
+    do
+    {
+        hr = factory->CreateTextFormat(L"Monaco", NULL, DWRITE_FONT_WEIGHT_REGULAR, DWRITE_FONT_STYLE_NORMAL,
+                                       DWRITE_FONT_STRETCH_NORMAL, fontSize, L"en-us", &reqFormat);
+        if (FAILED(hr))
+        {
+            break;
+        }
+
+        ComPtr<IDWriteTextLayout> pTextLayout = nullptr;
+        std::wstring msg = L"1234567890:";
+        hr = factory->CreateTextLayout(msg.c_str(), msg.size(), reqFormat.Get(), 1000.0f, 1000.0f, &pTextLayout);
+
+        if (SUCCEEDED(hr))
+        {
+            DWRITE_TEXT_METRICS textMetrics;
+            hr = pTextLayout->GetMetrics(&textMetrics);
+            if (SUCCEEDED(hr))
+            {
+                height = textMetrics.height;
+            }
+        }
+    } while (0);
+
+    if (SUCCEEDED(hr))
+    {
+        format = reqFormat;
+        fontHeight = height;
+    }
+
+    return hr;
 }

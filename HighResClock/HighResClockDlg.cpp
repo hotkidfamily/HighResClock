@@ -14,125 +14,123 @@
 #define new DEBUG_NEW
 #endif
 
-
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
-class CAboutDlg : public CDialogEx
-{
-public:
-	CAboutDlg();
+class CAboutDlg : public CDialogEx {
+  public:
+    CAboutDlg();
 
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
+    enum
+    {
+        IDD = IDD_ABOUTBOX
+    };
 #endif
 
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+  protected:
+    virtual void DoDataExchange(CDataExchange *pDX); // DDX/DDV 支持
 
-// 实现
-protected:
-	DECLARE_MESSAGE_MAP()
+    // 实现
+  protected:
+    DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
+CAboutDlg::CAboutDlg()
+    : CDialogEx(IDD_ABOUTBOX)
 {
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+void CAboutDlg::DoDataExchange(CDataExchange *pDX)
 {
-	CDialogEx::DoDataExchange(pDX);
+    CDialogEx::DoDataExchange(pDX);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-
 // CHighResClockDlg 对话框
 
-
-
-CHighResClockDlg::CHighResClockDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_HIGHRESCLOCK_DIALOG, pParent)
+CHighResClockDlg::CHighResClockDlg(CWnd *pParent /*=nullptr*/)
+    : CDialogEx(IDD_HIGHRESCLOCK_DIALOG, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+    m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CHighResClockDlg::DoDataExchange(CDataExchange* pDX)
+void CHighResClockDlg::DoDataExchange(CDataExchange *pDX)
 {
-	CDialogEx::DoDataExchange(pDX);
+    CDialogEx::DoDataExchange(pDX);
 }
 
 BEGIN_MESSAGE_MAP(CHighResClockDlg, CDialogEx)
-	ON_WM_SYSCOMMAND()
-	ON_WM_PAINT()
-	ON_WM_QUERYDRAGICON()
-	ON_WM_CLOSE()
-    ON_WM_LBUTTONDBLCLK()
-    ON_WM_SIZE()
-    END_MESSAGE_MAP()
-
+ON_WM_SYSCOMMAND()
+ON_WM_PAINT()
+ON_WM_QUERYDRAGICON()
+ON_WM_CLOSE()
+ON_WM_LBUTTONDBLCLK()
+ON_WM_SIZE()
+END_MESSAGE_MAP()
 
 // CHighResClockDlg 消息处理程序
 
 BOOL CHighResClockDlg::OnInitDialog()
 {
-	CDialogEx::OnInitDialog();
+    CDialogEx::OnInitDialog();
 
-	// 将“关于...”菜单项添加到系统菜单中。
+    // 将“关于...”菜单项添加到系统菜单中。
 
-	// IDM_ABOUTBOX 必须在系统命令范围内。
-	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-	ASSERT(IDM_ABOUTBOX < 0xF000);
+    // IDM_ABOUTBOX 必须在系统命令范围内。
+    ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+    ASSERT(IDM_ABOUTBOX < 0xF000);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != nullptr)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
+    CMenu *pSysMenu = GetSystemMenu(FALSE);
+    if (pSysMenu != nullptr)
+    {
+        BOOL bNameValid;
+        CString strAboutMenu;
+        bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
+        ASSERT(bNameValid);
+        if (!strAboutMenu.IsEmpty())
+        {
+            pSysMenu->AppendMenu(MF_SEPARATOR);
+            pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
+        }
+    }
 
-	// 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
-	//  执行此操作
-	SetIcon(m_hIcon, TRUE);			// 设置大图标
-	SetIcon(m_hIcon, FALSE);		// 设置小图标
+    // 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
+    //  执行此操作
+    SetIcon(m_hIcon, TRUE);  // 设置大图标
+    SetIcon(m_hIcon, FALSE); // 设置小图标
 
-	ShowWindow(SW_NORMAL);
+    ShowWindow(SW_NORMAL);
 
-	CenterWindow();
+    CenterWindow();
 
-	std::wstringstream wss;
-    wss << _T("HighResClock") << " /"<< Version << " /" << __DATE__;
+    std::wstringstream wss;
+    wss << _T("HighResClock") << " /" << Version << " /" << __DATE__;
 
-	SetWindowText(wss.str().c_str());
+    SetWindowText(wss.str().c_str());
 
-	//ShowWindow(SW_MINIMIZE);
-	_render = std::make_unique<d2dtext>();
-	_render->Init(this->m_hWnd);
+    // ShowWindow(SW_MINIMIZE);
+    _render = std::make_unique<d2dtext>();
+    _render->Init(GetSafeHwnd());
 
-	_render->Start();
+    _render->Start();
 
-	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+    return TRUE; // 除非将焦点设置到控件，否则返回 TRUE
 }
 
 void CHighResClockDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDialogEx::OnSysCommand(nID, lParam);
-	}
+    if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+    {
+        CAboutDlg dlgAbout;
+        dlgAbout.DoModal();
+    }
+    else
+    {
+        CDialogEx::OnSysCommand(nID, lParam);
+    }
 }
 
 // 如果向对话框添加最小化按钮，则需要下面的代码
@@ -141,27 +139,27 @@ void CHighResClockDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CHighResClockDlg::OnPaint()
 {
-	if (IsIconic())
-	{
-		CPaintDC dc(this); // 用于绘制的设备上下文
+    if (IsIconic())
+    {
+        CPaintDC dc(this); // 用于绘制的设备上下文
 
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+        SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// 使图标在工作区矩形中居中
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CRect rect;
-		GetClientRect(&rect);
-		int x = (rect.Width() - cxIcon + 1) / 2;
-		int y = (rect.Height() - cyIcon + 1) / 2;
+        // 使图标在工作区矩形中居中
+        int cxIcon = GetSystemMetrics(SM_CXICON);
+        int cyIcon = GetSystemMetrics(SM_CYICON);
+        CRect rect;
+        GetClientRect(&rect);
+        int x = (rect.Width() - cxIcon + 1) / 2;
+        int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// 绘制图标
-		dc.DrawIcon(x, y, m_hIcon);
-	}
-	else
-	{
-		CDialogEx::OnPaint();
-	}
+        // 绘制图标
+        dc.DrawIcon(x, y, m_hIcon);
+    }
+    else
+    {
+        CDialogEx::OnPaint();
+    }
 }
 
 void CHighResClockDlg::OnClose()
@@ -171,21 +169,21 @@ void CHighResClockDlg::OnClose()
     CDialog::OnClose();
 }
 
-//当用户拖动最小化窗口时系统调用此函数取得光标
-//显示。
+// 当用户拖动最小化窗口时系统调用此函数取得光标
+// 显示。
 HCURSOR CHighResClockDlg::OnQueryDragIcon()
 {
-	return static_cast<HCURSOR>(m_hIcon);
+    return static_cast<HCURSOR>(m_hIcon);
 }
 
-BOOL CHighResClockDlg::PreTranslateMessage(MSG* pMsg)
+BOOL CHighResClockDlg::PreTranslateMessage(MSG *pMsg)
 {
-	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
-	{
-		return TRUE; // 屏蔽ESC键
-	}
+    if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+    {
+        return TRUE; // 屏蔽ESC键
+    }
 
-	return CDialog::PreTranslateMessage(pMsg);
+    return CDialog::PreTranslateMessage(pMsg);
 }
 
 void CHighResClockDlg::OnLButtonDblClk(UINT, CPoint)
@@ -194,14 +192,14 @@ void CHighResClockDlg::OnLButtonDblClk(UINT, CPoint)
     {
         _showMsg = !_showMsg;
         _render->Config(_showMsg);
-	}
+    }
 }
 
-void CHighResClockDlg::OnSize(UINT, int, int)
+void CHighResClockDlg::OnSize(UINT, int x, int y)
 {
     if (_render)
     {
-        _render->End();
-        _render->Start();
+        SIZE v = { x, y };
+        _render->Resize(v);
     }
 }
